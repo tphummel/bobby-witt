@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "test": "standard && tap",
+    "fix": "standard --fix"
+  },
+  "devDependencies": {
+    "standard": "^16.0.3",
+    "tap": "^15.0.9"
+  }
+}
