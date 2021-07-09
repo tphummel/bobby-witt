@@ -29,8 +29,7 @@ function move (reqBody) {
   if (!atNorthWall && !movingSouth) moves.push(up)
   if (!atSouthWall && !movingNorth) moves.push(down)
 
-  // if (moves.length === 1) return { move: moves[0], shout }
-
+  return { move: moves[Math.floor(Math.random() * moves.length)].name, shout }
   // const occupied = snakes.reduce((memo, snake) => {
   //   for (let seg of snake.body) {
   //     if(!memo[seg.x]) memo[seg.x] = []
@@ -38,8 +37,6 @@ function move (reqBody) {
   //   }
   //   return memo
   // }, [])
-
-  return { move: moves[0].name, shout }
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line

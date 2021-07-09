@@ -52,10 +52,8 @@ tap.test('avoid hitting the north wall', function (t) {
     }
   }
 
-  const expected = 'left'
   const result = move(game)
-  t.equal(result.move, expected)
-
+  t.ok(result.move === 'left' || result.move === 'right')
   t.end()
 })
 
@@ -79,10 +77,8 @@ tap.test('avoid hitting the west wall', function (t) {
     }
   }
 
-  const expected = 'up'
   const result = move(game)
-  t.equal(result.move, expected)
-
+  t.ok(result.move === 'up' || result.move === 'down')
   t.end()
 })
 
