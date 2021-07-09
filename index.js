@@ -56,7 +56,7 @@ if (isCloudFlareWorker) {
       const body = {
         apiversion: '1',
         author: 'tphummel',
-        color: '#888888',
+        color: '#F494C6',
         head: 'viper',
         tail: 'rattle',
         version: '2021-07-07'
