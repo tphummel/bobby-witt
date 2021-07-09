@@ -9,8 +9,6 @@ function move (reqBody) {
   const up = { x: head.x, y: head.y + 1, name: 'up' }
   const down = { x: head.x, y: head.y - 1, name: 'down' }
 
-  // const snakes = board.snakes
-
   const neck = you.body[1]
 
   const movingNorth = neck.y === you.head.y - 1
@@ -23,20 +21,23 @@ function move (reqBody) {
   const atEastWall = you.head.x + 1 === board.width
   const atSouthWall = you.head.y === 0
 
-  const moves = []
+  let moves = []
   if (!atWestWall && !movingEast) moves.push(left)
   if (!atEastWall && !movingWest) moves.push(right)
   if (!atNorthWall && !movingSouth) moves.push(up)
   if (!atSouthWall && !movingNorth) moves.push(down)
 
+  const occupied = board.snakes.reduce((memo, snake) => {
+    for (const seg of snake.body) {
+      if (!memo[seg.x]) memo[seg.x] = []
+      memo[seg.x][seg.y] = true
+    }
+    return memo
+  }, [])
+
+  moves = moves.filter(move => occupied[move.x]?.[move.y] !== true)
+
   return { move: moves[Math.floor(Math.random() * moves.length)].name, shout }
-  // const occupied = snakes.reduce((memo, snake) => {
-  //   for (let seg of snake.body) {
-  //     if(!memo[seg.x]) memo[seg.x] = []
-  //     memo[seg.x][seg.y] = true
-  //   }
-  //   return memo
-  // }, [])
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line
@@ -59,7 +60,7 @@ if (isCloudFlareWorker) {
         color: '#ffc0cb',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-07'
+        version: '2021-07-09'
       }
 
       return new Response(JSON.stringify(body), { // eslint-disable-line
