@@ -326,3 +326,46 @@ tap.test('avoid hitting the east wall and another snake, eastbound', function (t
 
   t.end()
 })
+
+tap.test('avoid terminal move one removed, pinned in the corner', function (t) {
+  const game = {
+    board: {
+      height: 11,
+      width: 11,
+      snakes: [
+        {
+          id: 'c8cb622e-7bde-4bdf-b570-2303c83777c0',
+          name: 'me',
+          health: 92,
+          head: { x: 10, y: 9 },
+          length: 4,
+          body: [
+            { x: 10, y: 9 },
+            { x: 9, y: 9 },
+            { x: 9, y: 10 },
+            { x: 8, y: 10 }
+          ],
+          latency: 0,
+          shout: '',
+          squad: ''
+        }
+      ]
+    },
+    you: {
+      head: { x: 10, y: 9 },
+      body: [
+        { x: 10, y: 9 },
+        { x: 9, y: 9 },
+        { x: 9, y: 10 },
+        { x: 8, y: 10 }
+      ]
+    }
+  }
+
+  const expected = 'down'
+  const result = move(game)
+  const note = 'valid moves are up or down, but up is terminal one move later'
+  t.equal(result.move, expected, note)
+
+  t.end()
+})

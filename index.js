@@ -35,7 +35,47 @@ function move (reqBody) {
     return memo
   }, [])
 
-  moves = moves.filter(move => occupied[move.x]?.[move.y] !== true)
+  moves = moves.filter((move) => {
+    const moveIsTerminal = occupied[move.x]?.[move.y] === true
+    return !moveIsTerminal
+  })
+
+  moves = moves.filter((move) => {
+    const left = { x: move.x - 1, y: move.y, name: 'left' }
+    const right = { x: move.x + 1, y: move.y, name: 'right' }
+    const up = { x: move.x, y: move.y + 1, name: 'up' }
+    const down = { x: move.x, y: move.y - 1, name: 'down' }
+
+    let nextMoves = []
+
+    if (move.name !== 'right') nextMoves.push(left)
+    if (move.name !== 'left') nextMoves.push(right)
+    if (move.name !== 'up') nextMoves.push(down)
+    if (move.name !== 'down') nextMoves.push(up)
+
+    nextMoves = nextMoves.filter((nextMove) => {
+      const isNorthWall = nextMove.y === board.height
+      const isWestWall = nextMove.x === -1
+      const isEastWall = nextMove.x === board.width
+      const isSouthWall = nextMove.y === -1
+
+      if (isNorthWall || isWestWall || isEastWall || isSouthWall) return false
+
+      const isOccupied = occupied[nextMove.x]?.[nextMove.y] === true
+      return !isOccupied
+    })
+
+    const nextMoveIsTerminal = nextMoves.length === 0
+    if (nextMoveIsTerminal) return false
+    return true
+  })
+
+  if (moves.length === 0) {
+    return {
+      move: 'up',
+      shout: 'no viable moves!'
+    }
+  }
 
   return { move: moves[Math.floor(Math.random() * moves.length)].name, shout }
 }
@@ -60,7 +100,7 @@ if (isCloudFlareWorker) {
         color: '#ffc0cb',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-09'
+        version: '2021-07-10'
       }
 
       return new Response(JSON.stringify(body), { // eslint-disable-line
