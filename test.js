@@ -369,3 +369,48 @@ tap.test('avoid terminal move one removed, pinned in the corner', function (t) {
 
   t.end()
 })
+
+tap.test('stay alive longer even if the next move appears terminal', (t) => {
+  const game = {
+    board: {
+      height: 11,
+      width: 11,
+      snakes: [
+        {
+          id: 'c8cb622e-7bde-4bdf-b570-2303c83777c0',
+          name: 'me',
+          health: 92,
+          length: 5,
+          head: { x: 10, y: 10 },
+          body: [
+            { x: 10, y: 10 },
+            { x: 9, y: 10 },
+            { x: 9, y: 9 },
+            { x: 9, y: 8 },
+            { x: 10, y: 8 }
+          ],
+          latency: 0,
+          shout: '',
+          squad: ''
+        }
+      ]
+    },
+    you: {
+      head: { x: 10, y: 10 },
+      body: [
+        { x: 10, y: 10 },
+        { x: 9, y: 10 },
+        { x: 9, y: 9 },
+        { x: 9, y: 8 },
+        { x: 10, y: 8 }
+      ]
+    }
+  }
+
+  const expected = 'down'
+  const result = move(game)
+  const note = 'down appears terminal in one move, but take it to extend the game'
+  t.equal(result.move, expected, note)
+
+  t.end()
+})

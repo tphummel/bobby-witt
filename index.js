@@ -40,6 +40,8 @@ function move (reqBody) {
     return !moveIsTerminal
   })
 
+  if (moves.length === 1) return { move: moves[0].name, shout }
+
   moves = moves.filter((move) => {
     const left = { x: move.x - 1, y: move.y, name: 'left' }
     const right = { x: move.x + 1, y: move.y, name: 'right' }
@@ -100,7 +102,7 @@ if (isCloudFlareWorker) {
         color: '#ffc0cb',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-10'
+        version: '2021-07-11'
       }
 
       return new Response(JSON.stringify(body), { // eslint-disable-line
