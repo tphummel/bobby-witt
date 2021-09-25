@@ -42,6 +42,7 @@ function move (reqBody) {
 
   if (moves.length === 1) return { move: moves[0].name, shout }
 
+  // look ahead
   moves = moves.filter((move) => {
     const left = { x: move.x - 1, y: move.y, name: 'left' }
     const right = { x: move.x + 1, y: move.y, name: 'right' }
@@ -72,10 +73,12 @@ function move (reqBody) {
     return true
   })
 
+  // TODO: if look ahead goes from 2 moves to zero,
+  // I should still choose one of the non-terminal moves vs always going up
   if (moves.length === 0) {
     return {
       move: 'up',
-      shout: 'no viable moves!'
+      shout
     }
   }
 
