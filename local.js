@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
     req.on('end', () => {
       const reqBody = JSON.parse(data)
       // if (process.env.DEBUG) console.log(reqBody)
-      if (process.env.DEBUG) console.log(JSON.stringify(reqBody.board.snakes))
+      if (process.env.DEBUG) console.log(JSON.stringify(reqBody.board))
 
       const resBody = move(reqBody)
       // if (process.env.DEBUG) console.log(resBody)
