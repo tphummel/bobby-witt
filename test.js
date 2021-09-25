@@ -414,3 +414,47 @@ tap.test('stay alive longer even if the next move appears terminal', (t) => {
 
   t.end()
 })
+
+tap.test('avoid hazard sauce, simplest possible case', (t) => {
+  const game = {
+    board: {
+      height: 11,
+      width: 11,
+      snakes: [
+        {
+          id: 'c8cb622e-7bde-4bdf-b570-2303c83777c0',
+          name: 'me',
+          health: 99,
+          length: 3,
+          head: { x: 2, y: 10 },
+          body: [
+            { x: 2, y: 10 },
+            { x: 1, y: 10 },
+            { x: 0, y: 10 }
+          ],
+          latency: 0,
+          shout: '',
+          squad: ''
+        }
+      ],
+      hazards: [
+        { x: 3, y: 10 }
+      ]
+    },
+    you: {
+      head: { x: 2, y: 10 },
+      body: [
+        { x: 2, y: 10 },
+        { x: 1, y: 10 },
+        { x: 0, y: 10 }
+      ]
+    }
+  }
+
+  const expected = 'down'
+  const result = move(game)
+  const note = 'always choose south/down to avoid the hazard east/right'
+  t.equal(result.move, expected, note)
+
+  t.end()
+})

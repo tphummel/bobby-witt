@@ -79,6 +79,24 @@ function move (reqBody) {
     }
   }
 
+  if (moves.length === 1) return { move: moves[0].name, shout }
+
+  if (board.hazards) {
+    const hazards = board.hazards.reduce((memo, haz) => {
+      if (!memo[haz.x]) memo[haz.x] = []
+      memo[haz.x][haz.y] = true
+      return memo
+    }, [])
+
+    const nonHazMoves = moves.filter((move) => {
+      const moveIsHazard = hazards[move.x]?.[move.y] === true
+      return !moveIsHazard
+    })
+
+    if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
+    if (nonHazMoves.length >= 1) return { move: nonHazMoves[Math.floor(Math.random() * nonHazMoves.length)].name, shout }
+  }
+
   return { move: moves[Math.floor(Math.random() * moves.length)].name, shout }
 }
 
