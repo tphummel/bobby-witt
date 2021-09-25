@@ -60,4 +60,4 @@ const server = http.createServer((req, res) => {
   }
 })
 
-server.listen(8080)
+server.listen(process.env.PORT || 8080)
