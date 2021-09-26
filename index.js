@@ -84,6 +84,33 @@ function move (reqBody) {
 
   if (moves.length === 1) return { move: moves[0].name, shout }
 
+  // TODO: avoid head to head. more pressing than hazards. less pressing or equal to look ahead
+  const potentialHeadToHead = board.snakes.reduce((memo, snake) => {
+    // short circuit if the current snake is ourself
+    if (you.head.x === snake.head.x && you.head.y === snake.head.y) return memo
+
+    const up = { x: snake.head.x, y: snake.head.y + 1 }
+    const down = { x: snake.head.x, y: snake.head.y - 1 }
+    const left = { x: snake.head.x - 1, y: snake.head.y }
+    const right = { x: snake.head.x + 1, y: snake.head.y }
+    const movesToCheck = [up, down, left, right]
+
+    // intentionally ignoring opponent snake bodies, we've already accounted for those above
+    // some snake body will be covered here due to naive approach
+    movesToCheck.forEach(space => {
+      if (!memo[space.x]) memo[space.x] = []
+      memo[space.x][space.y] = true
+    })
+
+    return memo
+  }, [])
+
+  const movesToAvoidHeadToHead = moves.filter((move) => {
+    const moveIsPotentialHeadToHead = potentialHeadToHead[move.x]?.[move.y] === true
+    return !moveIsPotentialHeadToHead
+  })
+  if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
+
   if (board.hazards) {
     const hazards = board.hazards.reduce((memo, haz) => {
       if (!memo[haz.x]) memo[haz.x] = []
