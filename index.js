@@ -47,7 +47,7 @@ function move (reqBody) {
   if (nonTerminalMoves.length === 0) return { move: 'up', shout }
   if (nonTerminalMoves.length === 1) return { move: nonTerminalMoves[0].name, shout }
 
-  // 2 or 3 non-terminal moves exist, looking to narrow down the best one
+  if (process.env.DEBUG) console.log('possible moves based on location of other snakes')
 
   const lookAheadMoves = nonTerminalMoves.filter((move) => {
     const left = { x: move.x - 1, y: move.y, name: 'left' }
@@ -84,7 +84,8 @@ function move (reqBody) {
   if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout }
   if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout }
 
-  // TODO: avoid head to head. more pressing than hazards. less pressing or equal to look ahead
+  if (process.env.DEBUG) console.log('there are two or three moves which are safe when we look ahead one move. trying to narrow down further')
+
   const potentialHeadToHead = board.snakes.reduce((memo, snake) => {
     const snakeIsOurself = you.head.x === snake.head.x && you.head.y === snake.head.y
     if (snakeIsOurself) return memo
@@ -110,7 +111,7 @@ function move (reqBody) {
     return !moveIsPotentialHeadToHead
   })
 
-  if (process.env.DEBUG) console.log('possible moves avoiding possible head-to-head collision', movesToAvoidHeadToHead.length)
+  if (process.env.DEBUG) console.log('possible moves avoiding head-to-head collision', movesToAvoidHeadToHead.length)
 
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
