@@ -21,11 +21,13 @@ function move (reqBody) {
   const atEastWall = you.head.x + 1 === board.width
   const atSouthWall = you.head.y === 0
 
-  let moves = []
-  if (!atWestWall && !movingEast) moves.push(left)
-  if (!atEastWall && !movingWest) moves.push(right)
-  if (!atNorthWall && !movingSouth) moves.push(up)
-  if (!atSouthWall && !movingNorth) moves.push(down)
+  const legalBoardMoves = []
+  if (!atWestWall && !movingEast) legalBoardMoves.push(left)
+  if (!atEastWall && !movingWest) legalBoardMoves.push(right)
+  if (!atNorthWall && !movingSouth) legalBoardMoves.push(up)
+  if (!atSouthWall && !movingNorth) legalBoardMoves.push(down)
+
+  if (process.env.DEBUG) console.log('possible moves based on board edges:', legalBoardMoves.length)
 
   const occupied = board.snakes.reduce((memo, snake) => {
     for (const seg of snake.body) {
@@ -35,15 +37,19 @@ function move (reqBody) {
     return memo
   }, [])
 
-  moves = moves.filter((move) => {
+  const nonTerminalMoves = legalBoardMoves.filter((move) => {
     const moveIsTerminal = occupied[move.x]?.[move.y] === true
     return !moveIsTerminal
   })
 
-  if (moves.length === 1) return { move: moves[0].name, shout }
+  if (process.env.DEBUG) console.log('possible moves based on avoiding other snakes:', nonTerminalMoves.length)
 
-  // look ahead
-  moves = moves.filter((move) => {
+  if (nonTerminalMoves.length === 0) return { move: 'up', shout }
+  if (nonTerminalMoves.length === 1) return { move: nonTerminalMoves[0].name, shout }
+
+  if (process.env.DEBUG) console.log(`there are ${nonTerminalMoves.length} non-terminal moves to consider. evaluating further`)
+
+  const lookAheadMoves = nonTerminalMoves.filter((move) => {
     const left = { x: move.x - 1, y: move.y, name: 'left' }
     const right = { x: move.x + 1, y: move.y, name: 'right' }
     const up = { x: move.x, y: move.y + 1, name: 'up' }
@@ -73,31 +79,26 @@ function move (reqBody) {
     return true
   })
 
-  // TODO: if look ahead goes from 2 moves to zero,
-  // I should still choose one of the non-terminal moves vs always going up
-  if (moves.length === 0) {
-    return {
-      move: 'up',
-      shout
-    }
-  }
+  if (process.env.DEBUG) console.log('viable moves based on look ahead:', lookAheadMoves.length)
 
-  if (moves.length === 1) return { move: moves[0].name, shout }
+  if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout }
+  if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout }
 
-  // TODO: avoid head to head. more pressing than hazards. less pressing or equal to look ahead
+  if (process.env.DEBUG) console.log(`there are ${lookAheadMoves.length} moves which are safe when we look ahead one move. evaluating further`)
+
   const potentialHeadToHead = board.snakes.reduce((memo, snake) => {
-    // short circuit if the current snake is ourself
-    if (you.head.x === snake.head.x && you.head.y === snake.head.y) return memo
+    const snakeIsOurself = you.head.x === snake.head.x && you.head.y === snake.head.y
+    if (snakeIsOurself) return memo
 
     const up = { x: snake.head.x, y: snake.head.y + 1 }
     const down = { x: snake.head.x, y: snake.head.y - 1 }
     const left = { x: snake.head.x - 1, y: snake.head.y }
     const right = { x: snake.head.x + 1, y: snake.head.y }
-    const movesToCheck = [up, down, left, right]
+    const snakeNextMoves = [up, down, left, right]
 
     // intentionally ignoring opponent snake bodies, we've already accounted for those above
-    // some snake body will be covered here due to naive approach
-    movesToCheck.forEach(space => {
+    // some snake body will be covered here due to naive approach of using all four directions from head.
+    snakeNextMoves.forEach(space => {
       if (!memo[space.x]) memo[space.x] = []
       memo[space.x][space.y] = true
     })
@@ -105,29 +106,38 @@ function move (reqBody) {
     return memo
   }, [])
 
-  const movesToAvoidHeadToHead = moves.filter((move) => {
+  const movesToAvoidHeadToHead = lookAheadMoves.filter((move) => {
     const moveIsPotentialHeadToHead = potentialHeadToHead[move.x]?.[move.y] === true
     return !moveIsPotentialHeadToHead
   })
+
+  if (process.env.DEBUG) console.log('possible moves avoiding head-to-head collision:', movesToAvoidHeadToHead.length)
+
+  // TODO: if no way to avoid head to head. choose a random lookAheadMove.
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
-  if (board.hazards) {
+  if (board.hazards?.length > 0) {
     const hazards = board.hazards.reduce((memo, haz) => {
       if (!memo[haz.x]) memo[haz.x] = []
       memo[haz.x][haz.y] = true
       return memo
     }, [])
 
-    const nonHazMoves = moves.filter((move) => {
+    const nonHazMoves = movesToAvoidHeadToHead.filter((move) => {
       const moveIsHazard = hazards[move.x]?.[move.y] === true
       return !moveIsHazard
     })
 
+    if (process.env.DEBUG) console.log('possible moves avoiding hazard sauce:', nonHazMoves.length)
+
+    // TODO: if hazard is every direction, head toward the center of the board. if nonHazMoves.length === 0
     if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
     if (nonHazMoves.length >= 1) return { move: nonHazMoves[Math.floor(Math.random() * nonHazMoves.length)].name, shout }
   }
 
-  return { move: moves[Math.floor(Math.random() * moves.length)].name, shout }
+  if (process.env.DEBUG) console.log('final possible moves, randomizing a choice:', movesToAvoidHeadToHead.length)
+
+  return { move: movesToAvoidHeadToHead[Math.floor(Math.random() * movesToAvoidHeadToHead.length)].name, shout }
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line
