@@ -517,7 +517,6 @@ tap.test('avoid head to head: one safe option', (t) => {
 })
 
 tap.test('avoid head to head: two safe options', (t) => {
-  console.log('two safe')
   const you = {
     head: { x: 9, y: 2 },
     body: [
