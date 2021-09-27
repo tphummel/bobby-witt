@@ -81,10 +81,7 @@ function move (reqBody) {
 
   if (process.env.DEBUG) console.log('possible moves based on look ahead', lookAheadMoves.length)
 
-  // TODO: if look ahead goes from 2 moves to zero,
-  // I should still choose one of the non-terminal moves vs always going up
-  if (lookAheadMoves.length === 0) return { move: 'up', shout }
-
+  if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout }
   if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout }
 
   // TODO: avoid head to head. more pressing than hazards. less pressing or equal to look ahead
