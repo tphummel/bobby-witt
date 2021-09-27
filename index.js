@@ -115,7 +115,7 @@ function move (reqBody) {
 
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
-  if (board.hazards) {
+  if (board.hazards?.length > 0) {
     const hazards = board.hazards.reduce((memo, haz) => {
       if (!memo[haz.x]) memo[haz.x] = []
       memo[haz.x][haz.y] = true
