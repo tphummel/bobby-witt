@@ -113,6 +113,7 @@ function move (reqBody) {
 
   if (process.env.DEBUG) console.log('possible moves avoiding head-to-head collision', movesToAvoidHeadToHead.length)
 
+  // TODO: if no way to avoid head to head. choose a random lookAheadMove.
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
   if (board.hazards?.length > 0) {
@@ -129,6 +130,7 @@ function move (reqBody) {
 
     if (process.env.DEBUG) console.log('possible moves avoiding hazard sauce', nonHazMoves.length)
 
+    // TODO: if hazard is every direction, head toward the center of the board. if nonHazMoves.length === 0
     if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
     if (nonHazMoves.length >= 1) return { move: nonHazMoves[Math.floor(Math.random() * nonHazMoves.length)].name, shout }
   }
