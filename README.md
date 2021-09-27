@@ -7,11 +7,11 @@
 ## "Features"
 
 - Will avoid the wall if possible.
-- Won't make a terminal move if a non-terminal move is available.
-- Will randomly chooses a non-terminal move if more than one is available.
+- Will avoid snakes' current position if possible.
+- Will avoid going head to head with a snake. 
 - Will look one move ahead to avoid a move which is terminal one move later.
+- Will avoid hazard sauce. 
 - Will not intentionally seek out food.
-- Won't explicitly avoid head to head encounters.
 
 ## Notable things
 
