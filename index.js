@@ -179,7 +179,7 @@ if (isCloudFlareWorker) {
         color: '#ffc0cb',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-11'
+        version: 'YYYY-MM-DD-shortsha'
       }
 
       return new Response(JSON.stringify(body), { // eslint-disable-line
@@ -222,7 +222,7 @@ if (isCloudFlareWorker) {
     } else if (pathname.startsWith('/end')) {
       console.log('POST /end')
       console.log(new Map(request.headers))
-      
+
       const reqBodyTxt = await request.text()
       console.log(reqBodyTxt)
 
