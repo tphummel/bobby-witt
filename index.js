@@ -27,7 +27,7 @@ function move (reqBody) {
   if (!atNorthWall && !movingSouth) legalBoardMoves.push(up)
   if (!atSouthWall && !movingNorth) legalBoardMoves.push(down)
 
-  if (process.env.DEBUG) console.log('possible moves based on board edges:', legalBoardMoves.length)
+  console.log('possible moves based on board edges:', legalBoardMoves.length)
 
   const occupied = board.snakes.reduce((memo, snake) => {
     for (const seg of snake.body) {
@@ -42,12 +42,12 @@ function move (reqBody) {
     return !moveIsTerminal
   })
 
-  if (process.env.DEBUG) console.log('possible moves based on avoiding other snakes:', nonTerminalMoves.length)
+  console.log('possible moves based on avoiding other snakes:', nonTerminalMoves.length)
 
   if (nonTerminalMoves.length === 0) return { move: 'up', shout }
   if (nonTerminalMoves.length === 1) return { move: nonTerminalMoves[0].name, shout }
 
-  if (process.env.DEBUG) console.log(`there are ${nonTerminalMoves.length} non-terminal moves to consider. evaluating further`)
+  console.log(`there are ${nonTerminalMoves.length} non-terminal moves to consider. evaluating further`)
 
   const lookAheadMoves = nonTerminalMoves.filter((move) => {
     const left = { x: move.x - 1, y: move.y, name: 'left' }
@@ -79,12 +79,12 @@ function move (reqBody) {
     return true
   })
 
-  if (process.env.DEBUG) console.log('viable moves based on look ahead:', lookAheadMoves.length)
+  console.log('viable moves based on look ahead:', lookAheadMoves.length)
 
   if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout }
   if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout }
 
-  if (process.env.DEBUG) console.log(`there are ${lookAheadMoves.length} moves which are safe when we look ahead one move. evaluating further`)
+  console.log(`there are ${lookAheadMoves.length} moves which are safe when we look ahead one move. evaluating further`)
 
   const potentialHeadToHead = board.snakes.reduce((memo, snake) => {
     const snakeIsOurself = you.head.x === snake.head.x && you.head.y === snake.head.y
@@ -98,10 +98,10 @@ function move (reqBody) {
 
     // intentionally ignoring opponent snake bodies, we've already accounted for those above
     // some snake body will be covered here due to naive approach of using all four directions from head.
-    snakeNextMoves.forEach(space => {
+    for (const space of snakeNextMoves) {
       if (!memo[space.x]) memo[space.x] = []
       memo[space.x][space.y] = true
-    })
+    }
 
     return memo
   }, [])
@@ -111,9 +111,10 @@ function move (reqBody) {
     return !moveIsPotentialHeadToHead
   })
 
-  if (process.env.DEBUG) console.log('possible moves avoiding head-to-head collision:', movesToAvoidHeadToHead.length)
+  console.log('possible moves avoiding head-to-head collision:', movesToAvoidHeadToHead.length)
 
-  // TODO: if no way to avoid head to head. choose a random lookAheadMove.
+  let preferredMoves = movesToAvoidHeadToHead
+  if (movesToAvoidHeadToHead.length === 0) preferredMoves = lookAheadMoves
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
   if (board.hazards?.length > 0) {
@@ -123,21 +124,41 @@ function move (reqBody) {
       return memo
     }, [])
 
-    const nonHazMoves = movesToAvoidHeadToHead.filter((move) => {
+    const nonHazMoves = preferredMoves.filter((move) => {
       const moveIsHazard = hazards[move.x]?.[move.y] === true
       return !moveIsHazard
     })
 
-    if (process.env.DEBUG) console.log('possible moves avoiding hazard sauce:', nonHazMoves.length)
+    console.log('possible moves avoiding hazard sauce:', nonHazMoves.length)
 
     // TODO: if hazard is every direction, head toward the center of the board. if nonHazMoves.length === 0
     if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
-    if (nonHazMoves.length >= 1) return { move: nonHazMoves[Math.floor(Math.random() * nonHazMoves.length)].name, shout }
+    if (nonHazMoves.length > 1) preferredMoves = nonHazMoves
+  }
+  console.log('preferred moves:', preferredMoves.length)
+  if (preferredMoves.length === 1) return { move: preferredMoves[0].name, shout }
+
+  const isHungry = you.health < 50
+  console.log('hungry:', isHungry, you.health)
+  if (isHungry && preferredMoves.length > 1) {
+    const cups = board.food.reduce((memo, cup) => {
+      if (!memo[cup.x]) memo[cup.x] = []
+      memo[cup.x][cup.y] = true
+      return memo
+    }, [])
+
+    for (const move of preferredMoves) {
+      const foodIsAvailable = cups[move.x]?.[move.y]
+      if (foodIsAvailable) {
+        console.log('Eating adjacent food')
+        return { move: move.name, shout }
+      }
+    }
   }
 
-  if (process.env.DEBUG) console.log('final possible moves, randomizing a choice:', movesToAvoidHeadToHead.length)
+  console.log('final possible moves, randomizing a choice:', preferredMoves.length)
 
-  return { move: movesToAvoidHeadToHead[Math.floor(Math.random() * movesToAvoidHeadToHead.length)].name, shout }
+  return { move: preferredMoves[Math.floor(Math.random() * preferredMoves.length)].name, shout }
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line
@@ -160,7 +181,7 @@ if (isCloudFlareWorker) {
         color: '#ffc0cb',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-11'
+        version: 'YYYY-MM-DD-shortsha'
       }
 
       return new Response(JSON.stringify(body), { // eslint-disable-line
@@ -179,7 +200,8 @@ if (isCloudFlareWorker) {
       console.log('POST /start')
       console.log(new Map(request.headers))
 
-      // const reqBody = await request.text()
+      const reqBodyTxt = await request.text()
+      console.log(reqBodyTxt)
 
       // no response required
       return new Response('OK', { status: 200 }) // eslint-disable-line
@@ -202,6 +224,9 @@ if (isCloudFlareWorker) {
     } else if (pathname.startsWith('/end')) {
       console.log('POST /end')
       console.log(new Map(request.headers))
+
+      const reqBodyTxt = await request.text()
+      console.log(reqBodyTxt)
 
       // no response required
       return new Response('OK', { status: 200 }) // eslint-disable-line
