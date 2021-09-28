@@ -113,7 +113,8 @@ function move (reqBody) {
 
   console.log('possible moves avoiding head-to-head collision:', movesToAvoidHeadToHead.length)
 
-  // TODO: if no way to avoid head to head. choose a random lookAheadMove.
+  let preferredMoves = movesToAvoidHeadToHead
+  if (movesToAvoidHeadToHead.length === 0) preferredMoves = lookAheadMoves
   if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
 
   if (board.hazards?.length > 0) {
@@ -123,7 +124,7 @@ function move (reqBody) {
       return memo
     }, [])
 
-    const nonHazMoves = movesToAvoidHeadToHead.filter((move) => {
+    const nonHazMoves = preferredMoves.filter((move) => {
       const moveIsHazard = hazards[move.x]?.[move.y] === true
       return !moveIsHazard
     })
@@ -132,12 +133,12 @@ function move (reqBody) {
 
     // TODO: if hazard is every direction, head toward the center of the board. if nonHazMoves.length === 0
     if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
-    if (nonHazMoves.length >= 1) return { move: nonHazMoves[Math.floor(Math.random() * nonHazMoves.length)].name, shout }
+    if (nonHazMoves.length > 1) preferredMoves = nonHazMoves
   }
 
-  console.log('final possible moves, randomizing a choice:', movesToAvoidHeadToHead.length)
+  console.log('final possible moves, randomizing a choice:', preferredMoves.length)
 
-  return { move: movesToAvoidHeadToHead[Math.floor(Math.random() * movesToAvoidHeadToHead.length)].name, shout }
+  return { move: preferredMoves[Math.floor(Math.random() * preferredMoves.length)].name, shout }
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line
