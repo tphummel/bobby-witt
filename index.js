@@ -179,7 +179,8 @@ if (isCloudFlareWorker) {
       console.log('POST /start')
       console.log(new Map(request.headers))
 
-      // const reqBody = await request.text()
+      const reqBodyTxt = await request.text()
+      console.log(reqBodyTxt)
 
       // no response required
       return new Response('OK', { status: 200 }) // eslint-disable-line
@@ -202,6 +203,9 @@ if (isCloudFlareWorker) {
     } else if (pathname.startsWith('/end')) {
       console.log('POST /end')
       console.log(new Map(request.headers))
+      
+      const reqBodyTxt = await request.text()
+      console.log(reqBodyTxt)
 
       // no response required
       return new Response('OK', { status: 200 }) // eslint-disable-line
