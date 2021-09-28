@@ -148,9 +148,11 @@ function move (reqBody) {
     }, [])
 
     for (const move of preferredMoves) {
-      const foodIsAvailable = cups[move.x][move.y]
-      console.log('Eating food I see')
-      if (foodIsAvailable) return { move: move.name, shout }
+      const foodIsAvailable = cups[move.x]?.[move.y]
+      if (foodIsAvailable) {
+        console.log('Eating adjacent food')
+        return { move: move.name, shout }
+      }
     }
   }
 
