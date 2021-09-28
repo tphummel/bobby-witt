@@ -135,6 +135,24 @@ function move (reqBody) {
     if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
     if (nonHazMoves.length > 1) preferredMoves = nonHazMoves
   }
+  console.log('preferred moves:', preferredMoves.length)
+  if (preferredMoves.length === 1) return { move: preferredMoves[0].name, shout }
+
+  const isHungry = you.health < 50
+  console.log('hungry:', isHungry, you.health)
+  if (isHungry && preferredMoves.length > 1) {
+    const cups = board.food.reduce((memo, cup) => {
+      if (!memo[cup.x]) memo[cup.x] = []
+      memo[cup.x][cup.y] = true
+      return memo
+    }, [])
+
+    for (const move of preferredMoves) {
+      const foodIsAvailable = cups[move.x][move.y]
+      console.log('Eating food I see')
+      if (foodIsAvailable) return { move: move.name, shout }
+    }
+  }
 
   console.log('final possible moves, randomizing a choice:', preferredMoves.length)
 
