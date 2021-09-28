@@ -98,10 +98,10 @@ function move (reqBody) {
 
     // intentionally ignoring opponent snake bodies, we've already accounted for those above
     // some snake body will be covered here due to naive approach of using all four directions from head.
-    snakeNextMoves.forEach(space => {
+    for (const space of snakeNextMoves) {
       if (!memo[space.x]) memo[space.x] = []
       memo[space.x][space.y] = true
-    })
+    }
 
     return memo
   }, [])
