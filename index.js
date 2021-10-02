@@ -138,7 +138,7 @@ function move (reqBody) {
   console.log('preferred moves:', preferredMoves.length)
   if (preferredMoves.length === 1) return { move: preferredMoves[0].name, shout }
 
-  const isHungry = you.health < 50
+  const isHungry = you.health <= 100
   console.log('hungry:', isHungry, you.health)
   if (isHungry && preferredMoves.length > 1) {
     const cups = board.food.reduce((memo, cup) => {
