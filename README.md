@@ -9,9 +9,9 @@
 - Will avoid the wall if possible.
 - Will avoid snakes' current position if possible.
 - Will avoid going head to head with a snake. 
-- Will look one move ahead to avoid a move which is terminal one move later.
+- Will look one move ahead to avoid danger. 
 - Will avoid hazard sauce. 
-- Will not intentionally seek out food.
+- Will eat adjacent food if safe. 
 
 ## Notable things
 

@@ -52,8 +52,22 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify(resBody), 'UTF-8')
     })
   } else if (pathname.startsWith('/end')) {
-    res.writeHead(200)
-    return res.end('OK')
+    let data = ''
+
+    req.on('data', chunk => {
+      data += chunk
+    })
+
+    req.on('end', () => {
+      console.log('/end data')
+
+      const reqBody = JSON.parse(data)
+      // if (process.env.DEBUG) console.log(reqBody)
+      console.log(JSON.stringify(reqBody, false, 2))
+      // no response required
+      res.writeHead(200)
+      return res.end('OK')
+    })
   } else {
     res.writeHead(404)
     return res.end('Not Found')
