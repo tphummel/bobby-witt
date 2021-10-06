@@ -225,6 +225,28 @@ if (isCloudFlareWorker) {
         }
       })
     } else if (pathname.startsWith('/end')) {
+      const gameId = eventData.game_id
+      const mySnakeId = eventData.you_id
+
+      const gameUrl = `https://engine.battlesnake.com/games/${gameId}`
+      const opts = {
+        headers: {
+          'content-type': 'application/json;charset=UTF-8'
+        }
+      }
+      const gameRes = await fetch(gameUrl, opts) // eslint-disable-line
+      const gameResText = await gameRes.text()
+      const game = JSON.parse(gameResText)
+      const me = game.LastFrame.Snakes.find(snake => snake.ID === mySnakeId)
+
+      if (me.Death === null) {
+        eventData.outcome = 'win'
+      } else {
+        eventData.outcome = 'loss'
+        eventData.death_turn = me.Death.Turn
+        eventData.death_cause = me.Death.Cause
+        eventData.death_by = me.Death.EliminatedBy
+      }
       res = new Response('OK', { status: 200 }) // eslint-disable-line
     } else {
       res = new Response('Not Found', { status: 404 }) // eslint-disable-line
