@@ -1,6 +1,6 @@
 #!/usr/bin/env zx
 
-const gameIds = await fs.readJson('./game_ids.json') // eslint-disable-line
+const gameIds = await fs.readJson('./game_ids.json')
 await $`echo "game_id,timestamp,status,ruleset,outcome,death_turn,death_reason,death_by" > games.csv`
 
 for (const g of gameIds) {
@@ -11,7 +11,7 @@ for (const g of gameIds) {
       'content-type': 'application/json;charset=UTF-8'
     }
   }
-  const gameRes = await fetch(gameUrl, opts) // eslint-disable-line
+  const gameRes = await fetch(gameUrl, opts)
   const gameResText = await gameRes.text()
   const game = JSON.parse(gameResText)
   
