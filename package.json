@@ -10,5 +10,10 @@
   },
   "tap": {
     "check-coverage": false
+  },
+  "standard": {
+    "ignore": [
+      "bin/download-games.mjs"
+    ]
   }
 }
