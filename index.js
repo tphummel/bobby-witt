@@ -44,8 +44,9 @@ function move (reqBody) {
 
   console.log('possible moves based on avoiding other snakes:', nonTerminalMoves.length)
 
-  if (nonTerminalMoves.length === 0) return { move: 'up', shout }
-  if (nonTerminalMoves.length === 1) return { move: nonTerminalMoves[0].name, shout }
+  if (nonTerminalMoves.length === 0) return { move: 'up', shout, isChoice: false, isRandomized: false }
+  if (nonTerminalMoves.length === 1) return { move: nonTerminalMoves[0].name, shout, isChoice: false, isRandomized: false }
+  const isChoice = true
 
   console.log(`there are ${nonTerminalMoves.length} non-terminal moves to consider. evaluating further`)
 
@@ -81,8 +82,8 @@ function move (reqBody) {
 
   console.log('viable moves based on look ahead:', lookAheadMoves.length)
 
-  if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout }
-  if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout }
+  if (lookAheadMoves.length === 0) return { move: nonTerminalMoves[Math.floor(Math.random() * nonTerminalMoves.length)].name, shout, isChoice, isRandomized: true }
+  if (lookAheadMoves.length === 1) return { move: lookAheadMoves[0].name, shout, isChoice, isRandomized: false }
 
   console.log(`there are ${lookAheadMoves.length} moves which are safe when we look ahead one move. evaluating further`)
 
@@ -115,7 +116,7 @@ function move (reqBody) {
 
   let preferredMoves = movesToAvoidHeadToHead
   if (movesToAvoidHeadToHead.length === 0) preferredMoves = lookAheadMoves
-  if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout }
+  if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout, isChoice, isRandomized: false }
 
   if (board.hazards?.length > 0) {
     const hazards = board.hazards.reduce((memo, haz) => {
@@ -132,11 +133,11 @@ function move (reqBody) {
     console.log('possible moves avoiding hazard sauce:', nonHazMoves.length)
 
     // TODO: if hazard is every direction, head toward the center of the board. if nonHazMoves.length === 0
-    if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout }
+    if (nonHazMoves.length === 1) return { move: nonHazMoves[0].name, shout, isChoice, isRandomized: false }
     if (nonHazMoves.length > 1) preferredMoves = nonHazMoves
   }
   console.log('preferred moves:', preferredMoves.length)
-  if (preferredMoves.length === 1) return { move: preferredMoves[0].name, shout }
+  if (preferredMoves.length === 1) return { move: preferredMoves[0].name, shout, isChoice, isRandomized: false }
 
   const isHungry = you.health <= 100
   console.log('hungry:', isHungry, you.health)
@@ -151,14 +152,14 @@ function move (reqBody) {
       const foodIsAvailable = cups[move.x]?.[move.y]
       if (foodIsAvailable) {
         console.log('Eating adjacent food')
-        return { move: move.name, shout }
+        return { move: move.name, shout, isChoice, isRandomized: false }
       }
     }
   }
 
   console.log('final possible moves, randomizing a choice:', preferredMoves.length)
 
-  return { move: preferredMoves[Math.floor(Math.random() * preferredMoves.length)].name, shout }
+  return { move: preferredMoves[Math.floor(Math.random() * preferredMoves.length)].name, shout, isChoice, isRandomized: true }
 }
 
 const isCloudFlareWorker = typeof addEventListener !== 'undefined' && addEventListener // eslint-disable-line
@@ -184,7 +185,7 @@ if (isCloudFlareWorker) {
         color: '#888888',
         head: 'viper',
         tail: 'rattle',
-        version: '2021-07-07'
+        version: BATTLESNAKE_VERSION // eslint-disable-line
       }
 
       const res = new Response(JSON.stringify(body), { // eslint-disable-line
@@ -213,12 +214,21 @@ if (isCloudFlareWorker) {
 
     if (pathname.startsWith('/start')) {
       res = new Response('OK', { status: 200 }) // eslint-disable-line
+
     } else if (pathname.startsWith('/move')) {
       const resBody = move(reqBody)
+
       eventData.res_move = resBody.move
       eventData.res_shout = resBody.shout
+      eventData.move_is_choice = resBody.isChoice
+      eventData.move_is_randomized = resBody.isRandomized
 
-      res = new Response(JSON.stringify(resBody), { // eslint-disable-line
+      const resBodyOut = {
+        move: resBody.move,
+        shout: resBody.shout
+      }
+
+      res = new Response(JSON.stringify(resBodyOut), { // eslint-disable-line
         status: 200,
         headers: {
           'content-type': 'application/json;charset=UTF-8'
@@ -273,6 +283,7 @@ if (isCloudFlareWorker) {
 
     return {
       battlesnake: BATTLESNAKE_NAME, // eslint-disable-line
+      battlesnake_version: BATTLESNAKE_VERSION, // eslint-disable-line
       req_method: event.request.method,
       req_pathname: pathname,
       req_lat: cf.latitude,
