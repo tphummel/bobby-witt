@@ -91,6 +91,8 @@ function move (reqBody) {
     const snakeIsOurself = you.head.x === snake.head.x && you.head.y === snake.head.y
     if (snakeIsOurself) return memo
 
+    const oppLength = snake.length
+
     const up = { x: snake.head.x, y: snake.head.y + 1 }
     const down = { x: snake.head.x, y: snake.head.y - 1 }
     const left = { x: snake.head.x - 1, y: snake.head.y }
@@ -101,22 +103,49 @@ function move (reqBody) {
     // some snake body will be covered here due to naive approach of using all four directions from head.
     for (const space of snakeNextMoves) {
       if (!memo[space.x]) memo[space.x] = []
-      memo[space.x][space.y] = true
+      if (!memo[space.x][space.y]) {
+        memo[space.x][space.y] = oppLength
+      } else {
+        if (oppLength > memo[space.x][space.y]) {
+          memo[space.x][space.y] = oppLength
+        }
+      }
     }
 
     return memo
   }, [])
 
-  const movesToAvoidHeadToHead = lookAheadMoves.filter((move) => {
-    const moveIsPotentialHeadToHead = potentialHeadToHead[move.x]?.[move.y] === true
-    return !moveIsPotentialHeadToHead
+  const attackMoves = lookAheadMoves.filter((move) => {
+    const potentialHeadToHeadLength = potentialHeadToHead[move.x]?.[move.y]
+    const moveIsPotentialHeadToHead = potentialHeadToHeadLength >= 1
+    const headToHeadIsSmaller = potentialHeadToHeadLength < you.length
+
+    return moveIsPotentialHeadToHead && headToHeadIsSmaller
   })
 
-  console.log('possible moves avoiding head-to-head collision:', movesToAvoidHeadToHead.length)
+  console.log('possible moves attacking shorter snake, head-to-head collision:', attackMoves.length)
 
-  let preferredMoves = movesToAvoidHeadToHead
-  if (movesToAvoidHeadToHead.length === 0) preferredMoves = lookAheadMoves
-  if (movesToAvoidHeadToHead.length === 1) return { move: movesToAvoidHeadToHead[0].name, shout, isChoice, isRandomized: false }
+  if (attackMoves.length === 1) return { move: attackMoves[0].name, shout, isChoice, isRandomized: false }
+
+  let preferredMoves
+
+  if (attackMoves.length >= 2) {
+    preferredMoves = attackMoves
+  } else {
+    const defensiveMoves = lookAheadMoves.filter((move) => {
+      const potentialHeadToHeadLength = potentialHeadToHead[move.x]?.[move.y]
+      const moveIsPotentialHeadToHead = potentialHeadToHeadLength >= 1
+      return !moveIsPotentialHeadToHead
+    })
+
+    console.log('possible moves on defense, avoiding head-to-head:', defensiveMoves.length)
+
+    if (defensiveMoves.length === 0) preferredMoves = lookAheadMoves
+    if (defensiveMoves.length === 1) return { move: defensiveMoves[0].name, shout, isChoice, isRandomized: false }
+    if (defensiveMoves.length >= 2) preferredMoves = defensiveMoves
+  }
+
+  console.log('continuing evaluation of preferred moves:', preferredMoves.length)
 
   if (board.hazards?.length > 0) {
     const hazards = board.hazards.reduce((memo, haz) => {

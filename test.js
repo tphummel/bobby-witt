@@ -22,7 +22,8 @@ tap.test('move returns a valid move', function (t) {
         { x: 4, y: 4 },
         { x: 4, y: 5 },
         { x: 4, y: 6 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -48,7 +49,8 @@ tap.test('avoid hitting the north wall', function (t) {
         { x: 1, y: 10 },
         { x: 1, y: 9 },
         { x: 1, y: 8 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -73,7 +75,8 @@ tap.test('avoid hitting the west wall', function (t) {
         { x: 0, y: 5 },
         { x: 1, y: 5 },
         { x: 2, y: 5 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -98,7 +101,8 @@ tap.test('avoid hitting the northwest corner', function (t) {
         { x: 0, y: 10 },
         { x: 1, y: 10 },
         { x: 2, y: 10 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -125,7 +129,8 @@ tap.test('avoid hitting the southwest corner, southbound', function (t) {
         { x: 0, y: 0 },
         { x: 0, y: 1 },
         { x: 0, y: 2 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -152,7 +157,8 @@ tap.test('avoid hitting the south wall', function (t) {
         { x: 5, y: 0 },
         { x: 5, y: 1 },
         { x: 5, y: 2 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -178,7 +184,8 @@ tap.test('avoid hitting the southeast corner, eastbound', function (t) {
         { x: 10, y: 0 },
         { x: 9, y: 0 },
         { x: 8, y: 0 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -205,7 +212,8 @@ tap.test('survive the northeast corner, northbound', function (t) {
         { x: 10, y: 10 },
         { x: 10, y: 9 },
         { x: 10, y: 8 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -232,7 +240,8 @@ tap.test('avoid hitting the northeast corner, eastbound', function (t) {
         { x: 10, y: 10 },
         { x: 9, y: 10 },
         { x: 8, y: 10 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -259,7 +268,8 @@ tap.test('avoid hitting the east wall, southbound', function (t) {
         { x: 10, y: 9 },
         { x: 10, y: 10 },
         { x: 9, y: 10 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -316,7 +326,8 @@ tap.test('avoid hitting the east wall and another snake, eastbound', function (t
         { x: 10, y: 5 },
         { x: 9, y: 5 },
         { x: 8, y: 5 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -358,7 +369,8 @@ tap.test('avoid terminal move one removed, pinned in the corner', function (t) {
         { x: 9, y: 9 },
         { x: 9, y: 10 },
         { x: 8, y: 10 }
-      ]
+      ],
+      length: 4
     }
   }
 
@@ -403,7 +415,8 @@ tap.test('stay alive longer even if the next move appears terminal', (t) => {
         { x: 9, y: 9 },
         { x: 9, y: 8 },
         { x: 10, y: 8 }
-      ]
+      ],
+      length: 5
     }
   }
 
@@ -447,7 +460,8 @@ tap.test('avoid hazard sauce, simplest possible case', (t) => {
         { x: 2, y: 10 },
         { x: 1, y: 10 },
         { x: 0, y: 10 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -504,7 +518,8 @@ tap.test('avoid head to head: one safe option', (t) => {
         { x: 5, y: 5 },
         { x: 5, y: 6 },
         { x: 4, y: 6 }
-      ]
+      ],
+      length: 3
     }
   }
 
@@ -523,7 +538,8 @@ tap.test('avoid head to head: two safe options', (t) => {
       { x: 9, y: 2 },
       { x: 9, y: 1 },
       { x: 9, y: 0 }
-    ]
+    ],
+    length: 3
   }
 
   const game = {
@@ -578,7 +594,8 @@ tap.test('avoid head to head: two safe options (#2)', (t) => {
       { x: 9, y: 7 },
       { x: 9, y: 8 },
       { x: 10, y: 8 }
-    ]
+    ],
+    length: 3
   }
 
   const game = {
@@ -665,5 +682,71 @@ tap.test('eat food if hungry', (t) => {
   const result = move(game)
   const note = 'eat the food to the left'
   t.equal(result.move, 'left', note)
+  t.end()
+})
+
+tap.test('attack smaller snake, head to head', (t) => {
+  const you = {
+    head: { x: 5, y: 5 },
+    body: [
+      { x: 5, y: 5 },
+      { x: 5, y: 6 },
+      { x: 5, y: 7 },
+      { x: 6, y: 7 },
+      { x: 7, y: 7 }
+    ],
+    length: 5,
+    health: 77
+  }
+
+  const opp = {
+    head: { x: 5, y: 3 },
+    body: [
+      { x: 5, y: 3 },
+      { x: 5, y: 2 },
+      { x: 5, y: 1 },
+      { x: 4, y: 1 }
+    ],
+    length: 4,
+    health: 88
+  }
+
+  const game = {
+    board: {
+      height: 11,
+      width: 11,
+      snakes: [
+        {
+          id: 'id',
+          name: 'us',
+          health: you.health,
+          length: you.length,
+          head: you.head,
+          body: you.body,
+          latency: 0,
+          shout: '',
+          squad: ''
+        },
+        {
+          id: 'id2',
+          name: 'them',
+          health: opp.health,
+          length: opp.length,
+          head: opp.head,
+          body: opp.body,
+          latency: 0,
+          shout: '',
+          squad: ''
+        }
+      ],
+      food: [],
+      hazards: []
+    },
+    you: you
+  }
+
+  const result = move(game)
+  const note = 'attack the smaller snake'
+  t.equal(result.move, 'down', note)
   t.end()
 })
